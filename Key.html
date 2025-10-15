@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Get Key</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  .container {
+    background: #ffffff;
+    width: 360px;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+
+  h1 {
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 22px;
+  }
+
+  p {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+
+  button {
+    background: #777;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background: #555;
+  }
+
+  button.small {
+    background: #e0e0e0;
+    color: #333;
+    margin-top: 10px;
+    padding: 8px 14px;
+  }
+
+  .countdown {
+    font-weight: 600;
+    color: #444;
+    margin-top: 12px;
+    font-size: 16px;
+  }
+
+  .progress {
+    width: 100%;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #777;
+    transition: width 0.2s linear;
+  }
+
+  .key-box {
+    background: #f4f4f4;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 18px;
+    font-family: monospace;
+    color: #333;
+    font-size: 15px;
+    letter-spacing: 1px;
+    user-select: all;
+  }
+
+  .copied {
+    background: #d4ffd4;
+    border-color: #a0dca0;
+    color: #2a6b2a;
+    transition: all 0.3s;
+  }
+
+  .tutorial {
+    margin-top: 24px;
+    font-size: 13px;
+    text-align: left;
+    color: #444;
+  }
+
+  input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-family: monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Get Your Key</h1>
+  <p>Click the button below to start the countdown. A random key will appear after 12–20 seconds.</p>
+
+  <button id="getBtn">Get Key</button>
+  <div class="countdown" id="countdown">Waiting...</div>
+  <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+
+  <div class="key-box" id="keyBox" style="display:none;">KEY_XXXX-XXXX-XXXX-XXXX</div>
+
+  <button class="small" id="copyBtn">Copy Key</button>
+  <button class="small" id="pasteBtn">Legit</button>
+
+  <input id="pasteField" placeholder="Paste result will appear here" readonly />
+
+  <div class="tutorial">
+    <strong>Tutorial:</strong><br>
+    1️⃣ Click <b>Get Key</b> to begin.<br>
+    2️⃣ Wait 12–20 seconds for the timer to finish.<br>
+    3️⃣ Your unique key will appear above.<br>
+    4️⃣ Use <b>Copy</b> to copy it or <b>Legit</b> to insert from your clipboard.<br>
+    5️⃣ Works offline and online (HTTPS recommended for full features).
+  </div>
+</div>
+
+<script>
+const getBtn = document.getElementById('getBtn');
+const countdownEl = document.getElementById('countdown');
+const progressBar = document.getElementById('progressBar');
+const keyBox = document.getElementById('keyBox');
+const copyBtn = document.getElementById('copyBtn');
+const pasteBtn = document.getElementById('pasteBtn');
+const pasteField = document.getElementById('pasteField');
+
+let lastKey = '';
+let timer = null;
+
+function randomKey() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const group = () => Array.from({length:4}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  return 'KEY_' + [group(), group(), group(), group()].join('-');
+}
+
+function startCountdown() {
+  const total = Math.floor(Math.random() * 8) + 12; // 12–20s
+  let remaining = total;
+  countdownEl.textContent = `Time left: ${remaining}s`;
+  keyBox.style.display = 'none';
+  progressBar.style.width = '0%';
+  getBtn.disabled = true;
+
+  timer = setInterval(() => {
+    remaining--;
+    const percent = ((total - remaining) / total) * 100;
+    progressBar.style.width = percent + '%';
+    countdownEl.textContent = `Time left: ${remaining}s`;
+
+    if (remaining <= 0) {
+      clearInterval(timer);
+      showKey();
+    }
+  }, 1000);
+}
+
+function showKey() {
+  lastKey = randomKey();
+  keyBox.textContent = lastKey;
+  keyBox.style.display = 'block';
+  progressBar.style.width = '100%';
+  countdownEl.textContent = 'Done!';
+  getBtn.disabled = false;
+}
+
+// ✅ FIXED: Copy key agar selalu berfungsi di semua browser
+copyBtn.onclick = async () => {
+  if (!lastKey) return alert('No key generated yet.');
+
+  try {
+    await navigator.clipboard.writeText(lastKey);
+    showCopied();
+  } catch (err) {
+    const tempInput = document.createElement('textarea');
+    tempInput.value = lastKey;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    try {
+      document.execCommand('copy');
+      showCopied();
+    } catch {
+      alert('Copy failed. Please copy manually.');
+    }
+    document.body.removeChild(tempInput);
+  }
+};
+
+function showCopied() {
+  keyBox.classList.add('copied');
+  keyBox.textContent = lastKey + '  ✅ Copied!';
+  setTimeout(() => {
+    keyBox.classList.remove('copied');
+    keyBox.textContent = lastKey;
+  }, 1500);
+}
+
+pasteBtn.onclick = async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    pasteField.value = text || '(Clipboard empty)';
+  } catch {
+    pasteField.value = '(Clipboard not accessible)';
+  }
+};
+
+getBtn.onclick = startCountdown;
+</script>
+
+</body>
+</html>
